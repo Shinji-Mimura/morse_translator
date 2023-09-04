@@ -1,131 +1,94 @@
-#include<map>
-#include<string>
-#include<string.h> 
-#include<iostream>
-#include<vector>
-#include<algorithm>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
 using namespace std;
 
-        map<char,string> MS_DICT = {
-        {'A',".-"}, {'B',"-..."},
-        {'C',"-.-."}, {'D',"-.."},
-        {'E',"."}, {'F',"..-."},
-        {'G',"--."}, {'H',"...."},
-        {'I',".."}, {'J',".---"},
-        {'K',"-.-"}, {'L',".-.."},
-        {'M',"--"}, {'N',"-."},
-        {'O',"---"}, {'P',".--."},
-        {'Q',"--."}, {'R',".-."},
-        {'S',"..."}, {'T',"-"},
-        {'U',"..-"}, {'V',"...-"},
-        {'W',".--"}, {'X',"-..-"},
-        {'Y',"-.--"}, {'Z',"--.."},
-        {'0',"-----"}, {'1',".----"},
-        {'2',"..---"}, {'3',"...--"},
-        {'4',"....-"}, {'5',"....."},
-        {'6',"-...."}, {'7',"--..."},
-        {'8',"---.."}, {'9',"----."}
-    };
+const map<char, string> MORSE_DICT = {
+    {'A', ".-"},   {'B', "-..."}, {'C', "-.-."}, {'D', "-.."},
+    {'E', "."},    {'F', "..-."}, {'G', "--."},  {'H', "...."},
+    {'I', ".."},   {'J', ".---"}, {'K', "-.-"},  {'L', ".-.."},
+    {'M', "--"},   {'N', "-."},   {'O', "---"},  {'P', ".--."},
+    {'Q', "--.-"}, {'R', ".-."},  {'S', "..."},  {'T', "-"},
+    {'U', "..-"},  {'V', "...-"}, {'W', ".--"},  {'X', "-..-"},
+    {'Y', "-.--"}, {'Z', "--.."}, {'0', "-----"}, {'1', ".----"},
+    {'2', "..---"},{'3', "...--"},{'4', "....-"},{'5', "....."},
+    {'6', "-...."},{'7', "--..."},{'8', "---.."},{'9', "----."}
+};
 
-string up(string message){
+map<string, char> REVERSE_DICT;
 
-    for_each(message.begin(), message.end(), [](char & c){
-        c = toupper(c);
-    });
+void initializeReverseDict() {
+    for (auto const &pair : MORSE_DICT) {
+        REVERSE_DICT[pair.second] = pair.first;
+    }
+}
 
+string toUpperCase(string message) {
+    transform(message.begin(), message.end(), message.begin(), ::toupper);
     return message;
-    
 }
 
-string encrypta(string message){
-    message = up(message);
-    string cypher = "";
-    int tam = message.length();
-    for (int i = 0; i <= tam; i++)
-    {   
-        char aux = message[i];
-        if (aux != ' ')
-        {
-            cypher += MS_DICT[aux];
-            cypher += " ";
-        }
-        else {
-            cypher += ' ';
-        }
-        
-    }
-
-    return cypher;
-}
-
-vector<string> split(string str,string sep){
-    char* cstr=const_cast<char*>(str.c_str());
-    char* current;
-    vector<string> arr;
-    current=strtok(cstr,sep.c_str());
-    while(current!=NULL){
-        arr.push_back(current);
-        current=strtok(NULL,sep.c_str());
-    }
-    return arr;
-}
-
-string decrypta(string message){
-    message = up(message);
-    string decrypt_message = "";
-    vector<string> arr_message = split(message, " ");
-    int tam = arr_message.size();
-    
-    for (int i = 0; i <= tam; i++)
-    {
-        for (map<char,string>::iterator it=MS_DICT.begin(); it!=MS_DICT.end(); it++) 
-        {
-            if (arr_message[i] == it->second)
-            {
-                decrypt_message += it->first;
-                
-            }
-            
-
+string encryptMessage(const string &message) {
+    string encryptedMessage;
+    for (char c : message) {
+        if (c != ' ') {
+            encryptedMessage += MORSE_DICT.at(c);
+            encryptedMessage += " ";
+        } else {
+            encryptedMessage += ' ';
         }
     }
-    
-    return decrypt_message;
-
-   
-    
+    return encryptedMessage;
 }
 
-int main(int argc, char const *argv[])
-{
-    int op;
+vector<string> split(const string &str, char delim) {
+    vector<string> tokens;
+    stringstream ss(str);
+    string token;
+    while (getline(ss, token, delim)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+string decryptMessage(const string &message) {
+    string decryptedMessage;
+    vector<string> morseTokens = split(message, ' ');
+    for (const string &token : morseTokens) {
+        if (REVERSE_DICT.count(token)) {
+            decryptedMessage += REVERSE_DICT[token];
+        }
+    }
+    return decryptedMessage;
+}
+
+int main() {
+    initializeReverseDict();
+
+    int choice;
     cout << "1 - encrypt | 2 - decrypt : ";
-    cin >> op;
-    cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n'); 
+    cin >> choice;
+    cin.ignore();
 
-    if (op == 1)
-    {
+    if (choice == 1) {
         cout << "Write your message: ";
-        char your_message[100]={0};
-        cin.getline(your_message,100);
-        cout << encrypta(your_message) << endl;
-    }
-    
-    else if (op == 2){
+        string message;
+        getline(cin, message);
+        message = toUpperCase(message);
+        cout << encryptMessage(message) << endl;
+    } else if (choice == 2) {
         cout << "Write your morse code: ";
-        char your_message[100]={0};
-        cin.getline(your_message,100);
-        cout << decrypta(your_message) << endl;
+        string morseCode;
+        getline(cin, morseCode);
+        morseCode = toUpperCase(morseCode);
+        cout << decryptMessage(morseCode) << endl;
+    } else {
+        cout << "Invalid choice!" << endl;
     }
-
-    else
-    {
-        cout << "Invalid!" << endl;
-    }
-    
-
 
     return 0;
 }
-
-
